@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:String/controller/authStateController.dart';
@@ -142,9 +143,9 @@ class DateOfBirthScreen extends StatelessWidget {
                                       Image.asset("images/cake.png")
                                     ],
                                   ),
-                                  Row(
+                                  const Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
+                                    children:  [
                                       Text(
                                         "When were you born?",
                                         style: TextStyle(
@@ -205,6 +206,17 @@ class DateOfBirthScreen extends StatelessWidget {
                                 width: Get.width,
                                 child: TextButton(
                                   onPressed: (() {
+                                    (controller.calculateAge(controller.dateController.text) < 18)?
+                                    Fluttertoast.showToast(
+                                      msg: "Age must not be less than 18",
+                                      toastLength: Toast.LENGTH_LONG,
+                                      gravity: ToastGravity.BOTTOM,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: Colors.red,
+                                      textColor: Colors.white,
+                                      fontSize: 15.0
+                                    )
+                                    :
                                     controller.createProfile();
                                   }),
                                   style: TextButton.styleFrom(
@@ -215,7 +227,7 @@ class DateOfBirthScreen extends StatelessWidget {
                                   ),
                                   child:(controller.isLoading)?
                                   (
-                                    CircularProgressIndicator(
+                                    const CircularProgressIndicator(
                                       color: Colors.white,
                                     )
                                   ):

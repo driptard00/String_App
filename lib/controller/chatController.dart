@@ -53,7 +53,7 @@ class ChatController extends GetxController {
     update();
   }
   updateChatList(value) {
-    _chatList.add(value);
+    _chatList.insert(0, value);
     update();
   }
   updateChatList1(value) {
@@ -110,12 +110,11 @@ class ChatController extends GetxController {
     updateUserId(senderId);
     
     Map<String, dynamic> chatDetails = {
-      "senderId": senderId,
-      "receiverId": receiverId
+      "recevier": receiverId
     };
     print(chatDetails);
 
-    var response = await ChatApiServices.createChatService(chatDetails, createChatRoute);
+    var response = await ChatApiServices.createChatService(chatDetails);
     var responseData = response!.data;
     print(responseData);
 
@@ -124,11 +123,9 @@ class ChatController extends GetxController {
     if(isSuccess){
       updateIsLoading(false);
 
-      updateChatId(responseData["result"]["_id"]);
+      updateChatId(responseData["data"]["_id"]);
       print(_chatMessages); 
-
-      getAllMessages(receiverId, chatId);
-
+      
     } else if (responseData["error"] == "jwt expired") {
       logoutAuth();
     }
@@ -143,50 +140,61 @@ class ChatController extends GetxController {
     String senderId = await LocalStorage().fetchUserId();
 
     Map<String, dynamic> messageDetails = {
-      "chatId": chatId,
-      "senderId": senderId,
-      "message": message
+      "body": message
     };
     
     print(messageDetails);
 
-    var response = await ChatApiServices.createMessageService(messageDetails, createMessageRoute);
+    var response = await ChatApiServices.createMessageService(messageDetails, chatId);
     var responseData = response!.data;
     print(responseData);
 
     bool isSuccess = responseData["success"];
 
     if(isSuccess){
-      updateIsLoading(false);
+      // updateIsLoading(false);
 
-    } 
+      
+
+    } else {
+      // Fluttertoast.showToast(
+      //   msg: "Couldn't send message",
+      //   toastLength: Toast.LENGTH_LONG,
+      //   gravity: ToastGravity.BOTTOM,
+      //   timeInSecForIosWeb: 1,
+      //   backgroundColor: Colors.red,
+      //   textColor: Colors.white,
+      //   fontSize: 15.0
+      // );
+    }
 
     update();
   }
 
-  // CREATE CHAT
-  Future<void> getAllMessages(String receiverId, String chatId) async{
-    updateIsLoading(true);
+  // LOAD MESSAGES CHAT
+  Future<void> loadAllMessages(String chatId) async{
 
-    String senderId = await LocalStorage().fetchUserId();
-
-    var response = await ChatApiServices.getChatMessages(chatId, senderId, receiverId);
+    var response = await ChatApiServices.loadMessagesServices(chatId);
     var responseData = response!.data;
     print("Chat List:::::$responseData");
 
     bool isSuccess = responseData["success"];
 
     if(isSuccess){
-      updateIsLoading(false);
+      
+      updateChatList1(responseData["data"]);
 
-      // List<dynamic> dynamicList = responseData["result"];
-      // List<Message> messageList = dynamicList.map((dynamicItem) {
-      //   // Convert the dynamicItem to a Message object
-      //   return Message.fromMap(dynamicItem); // Assuming you have a fromJson method in the Message class
-      // }).toList();
+    }else {
 
-      updateChatList1(responseData["result"]);
-    
+      // Fluttertoast.showToast(
+      //   msg: "Couldnt retrieve messages!",
+      //   toastLength: Toast.LENGTH_LONG,
+      //   gravity: ToastGravity.BOTTOM,
+      //   timeInSecForIosWeb: 1,
+      //   backgroundColor: Colors.red,
+      //   textColor: Colors.white,
+      //   fontSize: 15.0
+      // );
     }
 
     update();
@@ -265,10 +273,9 @@ class ChatController extends GetxController {
   }
 
   // GET ALL USERS CHAT
-  Future<void> getChatAllUsers() async{
-    updateIsLoading(true);
+  Future<void> getAllConversations() async{
 
-    var response = await ApiServices.getAllUserChat(getUserChatsRoute);
+    var response = await ChatApiServices.getConversationService();
     var responseData = response!.data;
 
     print(responseData);
@@ -276,12 +283,10 @@ class ChatController extends GetxController {
     bool isSuccess = responseData["success"];
 
     if(isSuccess){
-      updateIsLoading(false); 
 
-      updateRecentMessagesList(responseData["result"]);
+      updateRecentMessagesList(responseData["data"]);
 
     } else{
-      updateIsLoading(false);
 
       Fluttertoast.showToast(
         msg: "Failed",
@@ -292,6 +297,30 @@ class ChatController extends GetxController {
         textColor: Colors.white,
         fontSize: 15.0
       );
+    }
+
+    update();
+  }
+
+  // SEND AS SEEN
+  Future<void> sendAsSeen(String chatID, senderID) async{
+
+    var response = await ChatApiServices.sendAsSeen(chatID, senderID);
+    var responseData = response!.data;
+
+    print(responseData);
+
+    bool isSuccess = responseData["success"];
+
+    if(isSuccess){
+
+      print("SEEN");
+      getAllConversations();
+
+    } else{
+
+      print("FAILED");
+
     }
 
     update();

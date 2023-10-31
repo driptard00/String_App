@@ -261,33 +261,6 @@ class ApiServices {
     }
   }
 
-  // GET ALL USER CHAT SERVICE
-  static Future<Response?> getAllUserChat(String urlRoute) async{
-    try {
-      String id = await LocalStorage().fetchUserId();
-      String token = await LocalStorage().fetchUserToken();
-
-      String fullUrl = "$baseUrl$urlRoute$id";
-
-      var response = await Dio().get(
-        fullUrl,
-        options: Options(
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": "Bearer $token"
-          }
-        )
-      );
-      return response;
-    } on DioError catch (error) {
-      if(error.response != null){
-        return error.response;
-      }
-      throw Exception(error.response);
-    }
-  }
-
   // DELETE USER SERVICE
   static Future<Response?> deleteUserService(String urlRoute, String userId) async{
     try {

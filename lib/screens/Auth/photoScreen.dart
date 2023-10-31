@@ -177,6 +177,16 @@ class PhotoScreen extends StatelessWidget {
                                       fontFamily: "Stinger"
                                     ),
                                   ),
+                                  const SizedBox(height: 10,),
+                                  const Text(
+                                    "Select at least 3 images",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 15,
+                                      fontFamily: "Stinger"
+                                    ),
+                                  ),
                                   const SizedBox(height: 20,),
                                   GridView.count(
                                     crossAxisCount: 3,
@@ -340,9 +350,9 @@ class PhotoScreen extends StatelessWidget {
                                 width: Get.width,
                                 child: TextButton(
                                   onPressed: (() {
-                                    if(controller.selectedImage1 == null || controller.selectedImage2 == null || controller.selectedImage3 == null || controller.selectedImage4== null || controller.selectedImage5 == null || controller.selectedImage6 == null){
+                                    if(controller.selectedImage1 == null || controller.selectedImage2 == null || controller.selectedImage3 == null){
                                       Fluttertoast.showToast(
-                                        msg: "Please select at least six images",
+                                        msg: "Please select at least 3 images",
                                         toastLength: Toast.LENGTH_LONG,
                                         gravity: ToastGravity.BOTTOM,
                                         timeInSecForIosWeb: 1,

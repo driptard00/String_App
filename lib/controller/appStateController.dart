@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:String/model/userModel.dart';
+import 'package:String/screens/Main/female/Chat/chatScreen.dart';
+import 'package:String/screens/Main/female/Home/homeScreen.dart';
 import 'package:String/services/payment_api_services.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -9,8 +11,7 @@ import 'package:String/screens/Main/Chat/chatScreen.dart';
 import 'package:String/screens/Main/Home/homeScreen.dart';
 import 'package:String/screens/Main/Profile/profileScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../screens/Main/LikesScreen/likesScreen.dart';
+import '../screens/Main/Likes/likesScreen.dart';
 
 class AppStateController extends GetxController{
   // Instant Variables
@@ -21,10 +22,18 @@ class AppStateController extends GetxController{
     ChatScreen(),
     ProfileScreen()
   ];
+  final List<Widget> _femaleScreen = [
+    FemaleHomeScreen(),
+    LikesScreen(),
+    FemaleChatScreen(),
+    ProfileScreen()
+  ];
   int _selectedUser = 0;
   bool _isLoading = false;
   String _sentByMe = "Seun";
   List<dynamic> _chatList = [];
+
+  MyUser _user = MyUser();
 
   List<Map<String, dynamic>> _paymentDetails = [
     {
@@ -56,6 +65,7 @@ class AppStateController extends GetxController{
   int get selectedIndex => _selectedIndex;
   int get selectedUser=> _selectedUser;
   List get screens => _screens;
+  List get femaleScreens => _femaleScreen;
   List get chatList => _chatList;
   List get paymentDetails => _paymentDetails;
   bool get isLoading => _isLoading;
@@ -95,14 +105,13 @@ class AppStateController extends GetxController{
     updateIsLoading(true);
 
     Map<String, dynamic> _details = {
-      "userId": userId,
       "amount": _selectedPlan,
       "email": email
     };
 
     print(_details);
 
-    var response = await PaymentApiService.paymentTopUpService(_details);
+    var response = await PaymentApiService.paymentTopUpService(_details, userId);
     var responseData = response!.data;
     print(responseData);
 
@@ -111,9 +120,54 @@ class AppStateController extends GetxController{
     if (isSuccess) {
       updateIsLoading(false);
 
-      final Uri _url = Uri.parse(responseData["paymentUrl"]);
+      final Uri _url = Uri.parse(responseData["sessionUrl"]);
       launchUrl(_url);
 
+      Future.delayed(
+        const Duration(minutes: 4),
+        (){
+          verifyPaymentService(responseData["sessionId"]);
+        }
+      );
+
+    }  else {
+      updateIsLoading(false);
+
+      Fluttertoast.showToast(
+        msg: "Failed",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 15.0
+      );
+    }
+  }
+
+  Future<void> verifyPaymentService(String sessionID) async{
+    updateIsLoading(true);
+
+    var response = await PaymentApiService.verifyPaymentServcie(sessionID);
+    var responseData = response!.data;
+    print(responseData);
+
+    bool isSuccess = responseData["success"];
+
+    if (isSuccess) {
+      updateIsLoading(false);
+
+      Fluttertoast.showToast(
+        msg: "Payment verified successfully",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 15.0
+      );
+
+      // getUserProfile();
 
     }  else {
       updateIsLoading(false);
@@ -130,4 +184,5 @@ class AppStateController extends GetxController{
     }
   }
   
+
 }

@@ -1,4 +1,3 @@
-import 'package:String/services/notification_services.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:String/controller/authStateController.dart';
@@ -100,7 +99,8 @@ class ProfileScreen extends StatelessWidget {
                             (controller.location == "")?
                             (
                               "Enable Location"
-                            ) :
+                            ) 
+                            :
                             (
                               controller.location
                             ),
@@ -191,7 +191,7 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           ListTile(
                             onTap: () {
-                              NotificationService().showNotification(title: "Alert", body: "Welcome to string");
+                              controller.launchEmail();
                             },
                             leading: const Icon(
                               Icons.help_outline,

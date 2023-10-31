@@ -4,20 +4,46 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:heroicons/heroicons.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
+
+import '../../../controller/authStateController.dart';
+import '../../../routes/api_routes.dart';
 import '../../../routes/app_route_names.dart';
+import '../../../storage/secureStorage.dart';
 
-class ChatScreen extends StatelessWidget {
-  ChatScreen({super.key});
+class ChatScreen extends StatefulWidget {
+  const ChatScreen({super.key});
+
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
 
   final ChatController _chatController = Get.put(ChatController());
+  // final AuthStateController _authStateController = Get.put(AuthStateController());
+
+  late IO.Socket _socket;
+  TextEditingController _msgTextController = TextEditingController();
+  String userId = "";
+
+  void getAuth() async {
+    userId = await LocalStorage().fetchUserId();
+    setState(() {
+      
+    });
+  }
+
+  @override
+  void initState() {
+    _chatController.getAllConversations();
+    getAuth();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _chatController.getChatAllUsers();
-    },);
 
     return GetBuilder<ChatController>(
       builder: (controller) {
@@ -151,6 +177,18 @@ class ChatScreen extends StatelessWidget {
                             ),
                           )
                           :
+                          (controller.recentMessagesList.isEmpty )?
+                          const Center(
+                            child: Text(
+                              "No Messages",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                                fontFamily: "Stinger"
+                              ),
+                            ),
+                          )
+                          :
                           ListView.separated(
                             itemBuilder: ((context, index) {
                               // final filteredData = controller.recentMessagesList.where((item) {
@@ -164,10 +202,10 @@ class ChatScreen extends StatelessWidget {
                                   Get.toNamed(
                                     chatRoom,
                                     arguments: {
-                                      "user": controller.recentMessagesList[index]["user"]
+                                      "user": controller.recentMessagesList[index]["user"],
+                                      "chatID": controller.recentMessagesList[index]["_id"],
                                     }
                                   );
-                                  _chatController.createChat(controller.recentMessagesList[index]["user"]["_id"]);
                                 },
                                 leading: CircleAvatar(
                                   radius: 40,
@@ -181,8 +219,20 @@ class ChatScreen extends StatelessWidget {
                                     fontFamily: "Stinger"
                                   ),
                                 ),
-                                subtitle: Text(
-                                  controller.recentMessagesList[index]["lastMessage"]["message"],
+                                subtitle: (controller.recentMessagesList[index]["lastMessage"].isEmpty)?
+                                const Text(
+                                  "No Messages, Click to begin",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 12,
+                                    fontFamily: "Stinger"
+                                  ),
+                                )
+                                :
+                                Text(
+                                  controller.recentMessagesList[index]["lastMessage"]["body"].toString(),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
@@ -194,6 +244,9 @@ class ChatScreen extends StatelessWidget {
                                 trailing: Column(
                                   children: [
                                     Text(
+                                      (controller.recentMessagesList[index]["lastMessage"].isEmpty)?
+                                      ""
+                                      :
                                       controller.calculateTimeDifference(controller.recentMessagesList[index]["lastMessage"]["createdAt"]),
                                       style: GoogleFonts.poppins(
                                         color: const Color(0xff4285F4),
@@ -201,137 +254,26 @@ class ChatScreen extends StatelessWidget {
                                       ),
                                     ),
                                     const SizedBox(
-                                      height: 5
-                                    ),
-                                    Flexible(
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical:5),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xff4285F4),
-                                          borderRadius: BorderRadius.circular(20)
-                                        ),
-                                        child: Text(
-                                          controller.recentMessagesList[index]["unreadMessages"].toString(),
-                                          style: GoogleFonts.poppins(
-                                            color: Colors.white,
-                                            fontSize: 10
-                                          ),
-                                        ),
-                                      )
-                                    ),
+                                      height: 15
+                                    ),  
+                                    (controller.recentMessagesList[index]["lastMessage"].isNotEmpty)?
+                                    (controller.recentMessagesList[index]["lastMessage"]["_sender"] != userId && !controller.recentMessagesList[index]["lastMessage"]["read"])?
+                                    Container(
+                                      height: 10,
+                                      width: 10,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xff4285F4),
+                                        borderRadius: BorderRadius.circular(20)
+                                      ),
+                                      alignment: Alignment.center,
+                                    )
+                                    :
+                                    SizedBox()
+                                    :
+                                    SizedBox()
                                   ]
                                 )
                               );
-                              // return InkWell(
-                              //   onTap: () {
-                              //     Get.toNamed(
-                              //       chatRoom,
-                              //       arguments: {
-                              //         "user": controller.recentMessagesList[index]["user"]
-                              //       }
-                              //     );
-                              //     _chatController.createChat(controller.recentMessagesList[index]["user"]["_id"]);
-                              //   },
-                              //   child: Container(
-                              //     height: 70,
-                              //     width: Get.width,
-                              //     child: Row(
-                              //       children: [
-                              //         Expanded(
-                              //           flex: 2,
-                              //           child: Container(
-                              //             child: CircleAvatar(
-                              //               radius: 40,
-                              //               backgroundImage: NetworkImage(controller.recentMessagesList[index]["user"]["images"][0]),
-                              //             ),
-                              //           ),
-                              //         ),
-                              //         const SizedBox(width: 10,),
-                              //         Expanded(
-                              //           flex: 8,
-                              //           child: Container(
-                              //             child: Column(
-                              //               mainAxisAlignment: MainAxisAlignment.center,
-                              //               children: [
-                              //                 Container(
-                              //                   child: Row(
-                              //                     children: [
-                              //                       Expanded(
-                              //                         flex: 7,
-                              //                         child: Text(
-                              //                           controller.recentMessagesList[index]["user"]["name"],
-                              //                           style: const TextStyle(
-                              //                             color: Colors.black,
-                              //                             fontSize: 15,
-                              //                             fontFamily: "Stinger"
-                              //                           ),
-                              //                         ),
-                              //                       ),
-                              //                       Expanded(
-                              //                         flex: 3,
-                              //                         child: Container(
-                              //                           alignment: Alignment.centerRight,
-                              //                           child: Text(
-                              //                             controller.calculateTimeDifference(controller.recentMessagesList[index]["lastMessage"]["createdAt"]),
-                              //                             style: GoogleFonts.poppins(
-                              //                               color: const Color(0xff4285F4),
-                              //                               fontSize: 10
-                              //                             ),
-                              //                           ),
-                              //                         ),
-                              //                       ),
-                              //                     ],
-                              //                   ),
-                              //                 ),    
-                              //                 Container(
-                              //                   child: Row(
-                              //                     children: [
-                              //                       Expanded(
-                              //                         flex: 8,
-                              //                         child: Text(
-                              //                           controller.recentMessagesList[index]["lastMessage"]["message"],
-                              //                           maxLines: 1,
-                              //                           overflow: TextOverflow.ellipsis,
-                              //                           style: const TextStyle(
-                              //                             color: Colors.black,
-                              //                             fontSize: 12,
-                              //                             fontFamily: "Stinger"
-                              //                           ),
-                              //                         ),
-                              //                       ),
-                              //                       Expanded(
-                              //                         flex: 2,
-                              //                         child: Container(
-                              //                           alignment: Alignment.centerRight,
-                              //                           child: Flexible(
-                              //                             child: Container(
-                              //                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical:5),
-                              //                               decoration: BoxDecoration(
-                              //                                 color: const Color(0xff4285F4),
-                              //                                 borderRadius: BorderRadius.circular(20)
-                              //                               ),
-                              //                               child: Text(
-                              //                                 controller.recentMessagesList[index]["unreadMessages"].toString(),
-                              //                                 style: GoogleFonts.poppins(
-                              //                                   color: Colors.white,
-                              //                                   fontSize: 10
-                              //                                 ),
-                              //                               ),
-                              //                             )
-                              //                           ),
-                              //                         ),
-                              //                       ),
-                              //                     ],
-                              //                   ),
-                              //                 ),                
-                              //               ],
-                              //             ),
-                              //           ),
-                              //         ),
-                              //       ],
-                              //     ),
-                              //   ),
-                              // );
                             }), 
                             separatorBuilder: ((context, index) {
                               return const SizedBox(

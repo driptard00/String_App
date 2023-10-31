@@ -17,11 +17,18 @@ class SplashScreen extends StatefulWidget {
 
   checkUser() async{
     String userId = await LocalStorage().fetchUserId();
+    String userType = await LocalStorage().fetchUSERTYPE();
 
     if(userId == ""){
       Get.offAllNamed(onboardingScreens);
     } else {
-      Get.offAllNamed(getDetailScreen);
+      (userType == 'female')?
+      Get.offAllNamed(femaleHoldersScreen)
+      :
+      (userType == 'male')?
+      Get.offAllNamed(holderScreen)
+      :
+      null;
     }
   }
 

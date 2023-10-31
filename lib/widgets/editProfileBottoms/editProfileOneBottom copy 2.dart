@@ -42,7 +42,7 @@ class EditImageBottom2{
                       children: [
                         InkWell(
                           onTap: (() {
-                            controller.getImageTwo(ImageSource.gallery);
+                            controller.editImageTwo(ImageSource.gallery);
                           }),
                           child: Container(
                             height: 50,

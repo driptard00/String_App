@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:String/widgets/deleteUserBottom.dart';
-import '../../../controller/authStateController.dart';
+import '../../../../../controller/authStateController.dart';
 
 class SettingScreen extends StatelessWidget {  
   SettingScreen({super.key});
@@ -79,8 +79,8 @@ class SettingScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 20,),
-                          Row(
-                            children: const [
+                          const Row(
+                            children:  [
                               SizedBox(width: 20,),
                               Icon(
                                 Icons.settings_outlined,
@@ -100,7 +100,7 @@ class SettingScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 20,),
                           settingsList("Contact Us", Icons.arrow_forward_ios_rounded, (){
-                            controller.sendEmail();
+                            controller.launchEmail();
                           }),
                           ListTile(
                             title: const Text(
@@ -125,7 +125,9 @@ class SettingScreen extends StatelessWidget {
                               })
                             ),
                           ),
-                          settingsList("Privacy Policy", Icons.arrow_forward_ios_rounded, (){}),
+                          settingsList("Privacy Policy", Icons.arrow_forward_ios_rounded, (){
+                            controller.launchPrivacy();
+                          }),
                           settingsList("Delete Account", Icons.arrow_forward_ios_rounded, (){DeleteAccountBottom.showDeleteAccountBottom();}),
                           const SizedBox(
                             height: 40,

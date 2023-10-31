@@ -12,7 +12,7 @@ class StringPremiumScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<AppStateController>(
+    return GetBuilder<AuthStateController>(
       builder: (controller) {
         return Scaffold(
           body: Stack(
@@ -99,8 +99,8 @@ class StringPremiumScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 20,),
-                        Row(
-                          children: const [
+                        const Row(
+                          children:  [
                             Text(
                               'Current Plans',
                               style: TextStyle(
@@ -149,7 +149,7 @@ class StringPremiumScreen extends StatelessWidget {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children:  [
                                               Text(
-                                               "${controller.paymentDetails[index]["type"]} ${controller.paymentDetails[index]["price"]}",
+                                               "${controller.paymentDetails[index]["type"]} ${controller.paymentDetails[index]["price"]} USD",
                                                 style: GoogleFonts.poppins(
                                                   color: Colors.white,
                                                   fontSize: 20,

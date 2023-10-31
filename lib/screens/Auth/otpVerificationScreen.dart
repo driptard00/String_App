@@ -154,7 +154,7 @@ class OtpVerificationScreen extends StatelessWidget {
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontSize: 15,
-                                            fontFamily: "Stinger"
+                                            // fontFamily: "Stinger"
                                           ),
                                         ),
                                         const SizedBox(height: 30,),
@@ -198,7 +198,7 @@ class OtpVerificationScreen extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(
-                                    height: 400
+                                    height: 100
                                   ),
                                   SizedBox(
                                     child: Column(

@@ -75,12 +75,23 @@ class LocalStorage{
     return deviceID;
   }
 
-  // FETCH TOKEN
-  Future<String> fetchMessagesList() async{
-    String token = await _flutterSecureStorage.read(key: "MessageList") ?? "";
-    print("Fetched list successful");
+  // STORE DEVICE ID
+  storeUserType(String deviceID) async{
+    try {
+      await _flutterSecureStorage.write(key: "USERTYPE", value: deviceID);
+      print("Saved type");
+    } catch (e) {
+      print(e);
+      print("Could not save id");
+    }
+  }
 
-    return token;
+  // FETCH DEVICE ID
+  Future<String> fetchUSERTYPE() async{
+    String deviceID = await _flutterSecureStorage.read(key: "USERTYPE") ?? "";
+    print("Fetched Id successful");
+
+    return deviceID;
   }
 
   // DELETE USER FROM STORAGE

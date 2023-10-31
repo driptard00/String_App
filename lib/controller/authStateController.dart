@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:String/services/payment_api_services.dart';
 import 'package:String/storage/secureStorage.dart';
 import 'package:cloudinary_sdk/cloudinary_sdk.dart';
 import 'package:dio/dio.dart';
@@ -47,6 +48,7 @@ class AuthStateController extends GetxController{
   String _location = "";
   String _otp = "";
   bool _isLoading = false;
+  bool _isCreateChatLoading = false;
   bool _hidePassword = true;
   bool _locationOn = false;
   final List<String> _genders = [
@@ -106,6 +108,38 @@ class AuthStateController extends GetxController{
   );
   int _userItemIndex = 0;
   String _imageUrl = "";
+  Map<String, dynamic> _otherUser = {};
+  List<Map<String, dynamic>> _paymentDetails = [
+    {
+      "type": "Bronze",
+      "price": 6.99,
+      "hearts": 220,
+      "specials": "See who likes your profile",
+      "description": "Buy Bronze Premium",
+    },
+    {
+      "type": "Silver",
+      "price": 17.98,
+      "hearts": 640,
+      "specials": "See who likes your profile",
+      "description": "Buy Silver Premium",
+    },
+    {
+      "type": "Gold",
+      "price": 29.99,
+      "hearts": 1020,
+      "specials": "See who likes your profile",
+      "description": "Buy Gold Premium",
+    },
+    {
+      "type": "Platinum",
+      "price": 59.99,
+      "hearts": 3000,
+      "specials": "See who likes your profile",
+      "description": "Buy Platinum Premium",
+    },
+  ];
+  dynamic _selectedPlan = 0;
 
   // Getters
   int get selectedIndex => _selectedIndex;
@@ -127,6 +161,7 @@ class AuthStateController extends GetxController{
   String get location => _location;
   int get userItemIndex => _userItemIndex;
   bool get isLoading => _isLoading;
+  bool get isCreateChatLoading => _isCreateChatLoading;
   bool get hidePassword => _hidePassword;
   bool get locationOn => _locationOn;
   File? get selectedImage1 => _selectedImage1;
@@ -162,6 +197,9 @@ class AuthStateController extends GetxController{
   List get likedMeUsers => _likedMeUsers;
   List get matchedUsers => _matchedUsers;
   String get imageUrl => _imageUrl;
+  Map get otherUser => _otherUser;
+  List get paymentDetails => _paymentDetails;
+
 
   // Setters
   updateFirstname(value) {
@@ -265,6 +303,10 @@ class AuthStateController extends GetxController{
     _isLoading = value;
     update();
   }
+  updateIsCreateChatLoading(value) {
+    _isCreateChatLoading = value;
+    update();
+  }
   toggleHidePassword() {
     _hidePassword = !_hidePassword;
     update();
@@ -342,26 +384,49 @@ class AuthStateController extends GetxController{
     _imageUrl = value;
     update();
   }
-
-  // Contact Us 
-    // SEND EMAIL
-  void sendEmail() async {
-    final Uri emailUri = Uri(
-      scheme: 'mailto',
-      path: 'akintadeseun816@gmail.com', // Replace with the recipient's email address
-      queryParameters: {
-        'subject': 'Hello', // Replace with the email subject (optional)
-        'body': 'Hello, how are you?', // Replace with the email body (optional)
-      },
-    );
-
-    if (await canLaunchUrl(emailUri)) {
-      await launchUrl(emailUri);
-    } else {
-      throw 'Could not send email';
-    }
+  updateOtherUser(value) {
+    _otherUser = value;
+    update();
+  }
+  updateSelectedPlan(value) {
+    _selectedPlan = value;
+    update();
   }
 
+  // LAUNCH EMAIL
+  launchEmail() async{
+    String? encodeQueryParameters(Map<String, String> params) {
+    return params.entries
+      .map((MapEntry<String, String> e) =>
+          '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+      .join('&');
+    }
+    final Uri email = Uri(
+      scheme: "mailto",
+      path: "string@gmail.com",
+      query: encodeQueryParameters(<String, String>{
+        'subject': "Hello!!!",
+      }),
+    );
+
+    (await canLaunchUrl(email))?
+    launchUrl(email)
+    :
+    throw Exception("Could not launch url");
+  }
+
+
+  Future<void> launchPrivacy() async {
+    const url = "https://string-backend-8df798bd9174.herokuapp.com/api/user/policy"; // Replace with your Google Meet URL or meeting code
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(
+        Uri.parse(url),
+      );
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+  
   // Date Picker
   Future<void> showDateTimePicker (BuildContext context) async{
     var dob = await showDatePicker(
@@ -761,11 +826,11 @@ class AuthStateController extends GetxController{
             resourceType: CloudinaryResourceType.image,
           )
         );
+        
         if(response.isSuccessful) {
           print('Get your image from with ${response.secureUrl}'); 
           updateImageUrl(response.secureUrl); 
           editImage(3, _imageUrl);
-          
 
         }
       } else {
@@ -971,7 +1036,7 @@ class AuthStateController extends GetxController{
     Map<String, dynamic> loginUserDetails = {
       "email": "$_email",
       "password": "$_password",
-      "device": deviceToken
+      // "device": deviceToken
     };
 
     print("DETAILS:::$loginUserDetails");
@@ -990,9 +1055,13 @@ class AuthStateController extends GetxController{
       String token = responseData["token"];
 
       print(token); 
+      print(responseData["data"]["user"]["Gender"]);
 
       await LocalStorage().storeUserId(userId);
       await LocalStorage().storeUserToken(token);
+      await LocalStorage().storeUserType(responseData["data"]["user"]["Gender"]);
+
+      updateFcmToken();
 
       Fluttertoast.showToast(
         msg: "Login Successful!!!",
@@ -1006,7 +1075,13 @@ class AuthStateController extends GetxController{
 
       _user = MyUser.fromMap(responseData["data"]["user"]);
 
-      Get.offAllNamed(getDetailScreen);
+      (responseData["data"]["user"]['Gender'] == "female")?
+      Get.offAllNamed(femaleHoldersScreen)
+      :
+      (responseData["data"]["user"]['Gender'] == "male")?
+      Get.offAllNamed(holderScreen)
+      :
+      "";
 
     }else{
       updateIsLoading(false);
@@ -1384,7 +1459,7 @@ class AuthStateController extends GetxController{
       : 
       (updateActiveUserDating(_users.where((females) => females["Gender"] == "female").toList()));
 
-      Get.toNamed(holderScreen);
+      // Get.toNamed(holderScreen);
 
     } else {
       updateIsLoading(false);
@@ -1416,6 +1491,16 @@ class AuthStateController extends GetxController{
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
         backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 15.0
+      );
+    } else {
+      Fluttertoast.showToast(
+        msg: responseData["message"],
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
         textColor: Colors.white,
         fontSize: 15.0
       );
@@ -1526,14 +1611,80 @@ class AuthStateController extends GetxController{
         Get.offAllNamed(genderScreen);
       } else if (list == []){
         Get.offAllNamed(photoScreen);
-      } else {
-        Get.toNamed(holderScreen);
-      }
+      } 
 
       await LocalStorage().storeUserId(responseData["data"]["_id"]);
 
     } else if (responseData["error"] == "jwt expired") {
       logoutAuth();
+    }
+    else{
+      updateIsLoading(false);
+
+      Fluttertoast.showToast(
+        msg: "Failed",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 15.0
+      );
+    }
+
+    update();
+  }
+
+  // GET OTHER USER PROFILE
+  Future<void> getProfile(String id) async{
+    updateIsLoading(true);
+
+    var response = await ApiServices.getUserProfileService(getProfileRoute, id);
+    var responseData = response!.data;
+
+    print(responseData);
+
+    bool isSuccess = responseData["success"];
+
+    if(isSuccess){
+      updateIsLoading(false);
+
+      updateOtherUser(responseData["data"]);
+
+    }
+    else{
+      updateIsLoading(false);
+
+      Fluttertoast.showToast(
+        msg: "Failed",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 15.0
+      );
+    }
+
+    update();
+  }
+
+  // GET OTHER USER PROFILE
+  Future<void> getProfile2(String id) async{
+    updateIsLoading(true);
+
+    var response = await ApiServices.getUserProfileService(getProfileRoute, id);
+    var responseData = response!.data;
+
+    print(responseData);
+
+    bool isSuccess = responseData["success"];
+
+    if(isSuccess){
+      updateIsLoading(false);
+
+      _user = MyUser.fromMap(responseData["data"]);
+
     }
     else{
       updateIsLoading(false);
@@ -1596,36 +1747,6 @@ class AuthStateController extends GetxController{
     }
   }
 
-  // CREATE CHAT
-  Future<void> getChatsMessages(String chatId, String receiverId) async{
-    updateIsLoading(true);
-
-    String senderId = await LocalStorage().fetchUserId();
-
-    var response = await ChatApiServices.getChatMessages(chatId, senderId, receiverId);
-    var responseData = response!.data;
-    print(responseData);
-
-    bool isSuccess = responseData["success"];
-
-    if(isSuccess){
-      updateIsLoading(false);
-
-      Fluttertoast.showToast(
-        msg: "messageFetched!!!",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-        fontSize: 15.0
-      );
-
-    }
-
-    update();
-  }
-
 
   // EDIT USER IMAGE
   Future<void> updateFcmToken() async{
@@ -1648,6 +1769,171 @@ class AuthStateController extends GetxController{
     } else {
       print("FAILEDDDD!!!!");
     }
+  }
+
+    // CREATE CHAT
+  Future<void> createChat(String receiverId) async{
+    updateIsCreateChatLoading(true);
+    
+    Map<String, dynamic> chatDetails = {
+      "recevier": receiverId
+    };
+    print(chatDetails);
+
+    var response = await ChatApiServices.createChatService(chatDetails);
+    var responseData = response!.data;
+    print(responseData);
+
+    bool isSuccess = responseData["success"];
+
+    if(isSuccess){
+      updateIsCreateChatLoading(false);
+
+      updateChatId(responseData["data"]["_id"]);
+
+      Get.toNamed(
+        chatRoom,
+        arguments: {
+          "user": _activeUserDating[_userItemIndex],
+          "chatID": responseData["data"]["_id"]
+        }
+      );
+      
+    } else if (responseData["error"] == "jwt expired") {
+       Fluttertoast.showToast(
+        msg: "Session Expired!",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 15.0
+      );
+      logoutAuth();
+    }
+
+    update();
+
+  }
+
+  Future<void> paymentTopUp(String userId, String email) async{
+    updateIsLoading(true);
+
+    Map<String, dynamic> _details = {
+      "amount": _selectedPlan,
+      "email": email
+    };
+
+    print(_details);
+
+    var response = await PaymentApiService.paymentTopUpService(_details, userId);
+    var responseData = response!.data;
+    print(responseData);
+
+    bool isSuccess = responseData["success"];
+
+    if (isSuccess) {
+      updateIsLoading(false);
+
+      final Uri _url = Uri.parse(responseData["sessionUrl"]);
+      launchUrl(_url);
+
+      Future.delayed(
+        const Duration(minutes: 5),
+        (){
+          verifyPaymentService(responseData["sessionId"]);
+        }
+      );
+
+    }  else {
+      updateIsLoading(false);
+
+      Fluttertoast.showToast(
+        msg: "Failed",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 15.0
+      );
+    }
+  }
+
+  Future<void> verifyPaymentService(String sessionID) async{
+    updateIsLoading(true);
+
+    var response = await PaymentApiService.verifyPaymentServcie(sessionID);
+    var responseData = response!.data;
+    print(responseData);
+
+    bool isSuccess = responseData["success"];
+
+    if (isSuccess) {
+      updateIsLoading(false);
+
+      Fluttertoast.showToast(
+        msg: "Payment verified successfully",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 15.0
+      );
+
+      getUserProfile();
+
+    }  else {
+      updateIsLoading(false);
+
+      Fluttertoast.showToast(
+        msg: "Failed",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 15.0
+      );
+    }
+  }
+  
+  // CREATE MESSAGE
+  Future<void> createMessage(String message, String chatId) async{
+
+    String senderId = await LocalStorage().fetchUserId();
+
+    Map<String, dynamic> messageDetails = {
+      "body": message
+    };
+    
+    print(messageDetails);
+
+    var response = await ChatApiServices.createMessageService(messageDetails, chatId);
+    var responseData = response!.data;
+    print(responseData);
+
+    bool isSuccess = responseData["success"];
+
+    if(isSuccess){
+      // updateIsLoading(false);
+      String id = await LocalStorage().fetchUserId();
+      getProfile2(id);
+
+    } else {
+      // Fluttertoast.showToast(
+      //   msg: "Couldn't send message",
+      //   toastLength: Toast.LENGTH_LONG,
+      //   gravity: ToastGravity.BOTTOM,
+      //   timeInSecForIosWeb: 1,
+      //   backgroundColor: Colors.red,
+      //   textColor: Colors.white,
+      //   fontSize: 15.0
+      // );
+    }
+
+    update();
   }
 
 }

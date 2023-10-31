@@ -12,8 +12,8 @@ class MyUser {
     String? id;
     String? name;
     String? email;
-    List<MyUser>? likes;
-    List<String>? likedMe;
+    List<dynamic>? likes;
+    List<dynamic>? likedMe;
     String? status;
     List<String>? images;
     int? hearts;
@@ -73,8 +73,8 @@ class MyUser {
         id: json["_id"],
         name: json["name"],
         email: json["email"],
-        likes: List<MyUser>.from(json["likes"].map((x) => MyUser.fromMap(x))),
-        likedMe: List<String>.from(json["likedMe"].map((x) => x)),
+        likes: List<dynamic>.from(json["likes"].map((x) => x)),
+        likedMe: List<dynamic>.from(json["likedMe"].map((x) => x)),
         status: json["Status"],
         images: List<String>.from(json["images"].map((x) => x)),
         hearts: json["hearts"],

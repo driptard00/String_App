@@ -70,14 +70,7 @@ class UserChatList {
                           } else {
                             return InkWell(
                               onTap: () {
-                                controller.updaterUserItemIndex(index);
-                                Get.toNamed(
-                                  chatRoom,
-                                  arguments: {
-                                    "user": controller.activeUserDating[controller.userItemIndex]
-                                  }
-                                );
-                                _chatController.createChat(controller.activeUserDating[controller.userItemIndex]["_id"]);
+                                controller.createChat(controller.activeUserDating[controller.userItemIndex]["_id"]);
                               },
                               child: Container(
                                 height: 70,

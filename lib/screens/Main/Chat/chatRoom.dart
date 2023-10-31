@@ -1,7 +1,9 @@
+import 'package:String/storage/secureStorage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:heroicons/heroicons.dart';
+import 'package:intl/intl.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../../../controller/authStateController.dart';
 import '../../../controller/chatController.dart';
@@ -19,57 +21,76 @@ class ChatRoom extends StatefulWidget {
 class _ChatRoomState extends State<ChatRoom> {
 
   final userDetails = Get.arguments["user"];
+  final chatID = Get.arguments["chatID"];
 
-  final ChatController _chatController = Get.put(ChatController());
+  final ChatController _chatController = Get.find<ChatController>();
 
   late IO.Socket _socket;
   TextEditingController _msgTextController = TextEditingController();
   final AuthStateController _authStateController = Get.find<AuthStateController>();
+  String userID = "";
 
-  sendMessage(String message) {
-    _socket.emit("sendMessage", {
-      "senderId": _authStateController.user.id,
-      "chatId": _authStateController.chatId,
-      "message": message,
-      // "_id": "",
-      "createdAt": DateTime.now().toString(),
-      "updatedAt": DateTime.now().toString(),
-      "__v": 0
-    });
-  }
+  // void _connectToSocket() async {
+  //   userID = await LocalStorage().fetchUserId();
+  //   _chatController.sendAsSeen(chatID, userID);
 
-  void _connectToSocket() {
-    _socket = IO.io(
-      baseUrl,
-      IO.OptionBuilder().setTransports(['websocket']).enableAutoConnect().build()
-    );
+  //   print("USERRRRIDDDDD:::::$userID");
 
-    _socket.on('error', (data) {
-      print('Socket error: $data');
-    });
+  //   _socket = IO.io(
+  //       "$baseUrl?auth=$userID",
+  //       IO.OptionBuilder().setTransports(['websocket'])
+  //       .enableReconnection()
+  //       .enableForceNewConnection()
+  //       .enableAutoConnect()
+  //       .build()
+  //   );
 
-    _socket.on('disconnect', (data) {
-      print('Socket disconnected: $data');
-    });
+  //   _socket.on('error', (data) {
+  //     print('Socket error: $data');
+  //   });
 
-    _socket.on('getMessage', (data) {
-      // Handle the received event data
-      print('Received event: $data');
-      _chatController.updateChatList(data);
-    });
+  //   _socket.on('disconnect', (data) {
+  //     print('Socket disconnected: $data');
+  //   });
 
-    _socket.connect();
+  //   _socket.on('connect', (data) {
+  //     print('Socket Connected!!!!');
+  //   });
 
-    setState(() {
+  //   // _socket.on('message', (data) {
+  //   //   // Handle the received event data
+  //   //   print('Received event: $data');
+  //   //   _chatController.updateChatList(data);
+  //   //   _authStateController.getUserProfile();
+  //   // });
+
+  //   _socket.on('read', (data) {
+  //     // Handle the received event data
+  //     print('Received event: $data');
+  //     // _chatController.updateReadID(data["_chat"]);
+  //     // _chatController.markMessageRead(data["_chat"], userID);
+  //   });
+
+  //   // _socket.on('chat', (data) {
+  //   //   // Handle the received event data
+  //   //   print('Received event: $data');
+  //   //   _chatController.updateLastMessageTime(data["chat"]);
+  //   // });
+
+  //   _socket.connect();
+
+  //   setState(() {
       
-    });
-  }
+  //   });
+  // }
+
 
   @override
   void initState() {
+    // _connectToSocket();
+    _chatController.loadAllMessages(chatID);
+    _chatController.sendAsSeen(chatID, userDetails["_id"]);
     super.initState();
-    _chatController.getAllMessages(userDetails["_id"], _authStateController.chatId);
-    _connectToSocket();
   }
 
   @override
@@ -184,24 +205,44 @@ class _ChatRoomState extends State<ChatRoom> {
                               padding: const EdgeInsets.symmetric(horizontal: 20),
                               child: ListView.separated(
                               itemCount: controller.chatList.length,
-                              // reverse: true,
+                              reverse: true,
                               separatorBuilder: (context, index) {
                                 return const SizedBox(height: 5);
                               },
                               itemBuilder: (context, index) {
                                 final message = controller.chatList[index];
-                                final senderId = controller.userId;
-                                print("SenderId::::$senderId");
-                                
+                                String timestamp = controller.chatList[index]["sent"];
+                                var dateTime = DateTime.parse(timestamp).toLocal();
+                                var now = DateTime.now();
+                                bool isToday = dateTime.year == now.year &&
+                                dateTime.month == now.month &&
+                                dateTime.day == now.day;
+
+                                // Format date and time
+                                String formattedDate;
+                                if (isToday) {
+                                  formattedDate = 'Today';
+                                } else {
+                                  formattedDate = DateFormat('d MMM, y').format(dateTime);
+                                }
+
+                                final formattedTime = DateFormat('h:mma').format(dateTime).toLowerCase();
+
                                 return Align(
-                                  alignment: message["senderId"] == controller.userId ? Alignment.centerRight : Alignment.centerLeft,
+                                  alignment: message["SentByMe"] == true ? Alignment.centerRight : Alignment.centerLeft,
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 5),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                                      decoration: BoxDecoration(
-                                        color: message["senderId"] == controller.userId ? const Color(0xffFEDC00) : const Color(0xffD9D9D9),
-                                        borderRadius: message["senderId"] == controller.userId
+                                    child: Column(
+                                      crossAxisAlignment: (!message["SentByMe"])?
+                                      CrossAxisAlignment.start
+                                      :
+                                      CrossAxisAlignment.end,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                                          decoration: BoxDecoration(
+                                            color: message["SentByMe"] == true ? const Color(0xffFEDC00) : const Color(0xffD9D9D9),
+                                            borderRadius: message["SentByMe"] == true
                                             ? const BorderRadius.only(
                                                 topLeft: Radius.circular(30),
                                                 topRight: Radius.circular(30),
@@ -214,15 +255,27 @@ class _ChatRoomState extends State<ChatRoom> {
                                                 bottomLeft: Radius.circular(3),
                                                 bottomRight: Radius.circular(30),
                                               ),
-                                      ),
-                                      child: Text(
-                                        message["message"],
-                                        style: const TextStyle(
-                                          color: Colors.black,
-                                          fontFamily: "Stinger",
-                                          fontSize: 15,
+                                          ),
+                                          child: Text(
+                                            message["body"],
+                                            textAlign: message["SentByMe"] ?
+                                            TextAlign.right
+                                            :
+                                            TextAlign.left,
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 15,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                        Text(
+                                          formattedTime,
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 );
@@ -274,8 +327,7 @@ class _ChatRoomState extends State<ChatRoom> {
                                             );
                                           } else {
                                             if(_msgTextController.text.isNotEmpty){
-                                              sendMessage(_msgTextController.text);
-                                              controller.createMessage(_msgTextController.text, controller.chatId);
+                                              _authStateController.createMessage(_msgTextController.text, chatID);
                                               _msgTextController.clear();
                                             } 
                                           }
@@ -305,24 +357,4 @@ class _ChatRoomState extends State<ChatRoom> {
       }
     );
   }
-  
-  // void sendMessage(String text){
-  //   setState(() {
-  //     var messageJson = {
-  //       "message": text,
-  //       "sentByMe": socket!.id
-  //     };
-  //     socket!.emit("sendMessage", messageJson);
-  //     chatController.chatMessages.add(Message.fromJson(messageJson));
-  //   });
-  // }
-
-  // setUpSocketListener() {
-  //   socket!.on("getMessage", (message) {
-  //     print("Message:::$message");
-  //     chatController.chatMessages.add(Message.fromJson(message));
-  //   });
-
-  // }
-
 }

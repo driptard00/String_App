@@ -21,6 +21,8 @@ String forgotPasswordScreen = "/forgotPasswordScreen";
 String enterPasswordScreen = "/enterPasswordScreen";
 String otpVerificationScreen = "/otpVerificationScreen";
 
+String femaleHoldersScreen = "/femaleHoldersScreen";
+
 // Main Screens
 String holderScreen = "/holderScreen";
 String matchProfileScreen= "/matchProfileScreen";

@@ -1,6 +1,5 @@
 import 'package:String/screens/Auth/otpVerificationScreen.dart';
-import 'package:String/screens/getDetailsScreen.dart';
-import 'package:String/screens/testScreen.dart';
+import 'package:String/screens/Main/female/holderScreen.dart';
 import 'package:get/get.dart';
 import 'package:String/routes/app_route_names.dart';
 import 'package:String/screens/Auth/authIntroScreen.dart';
@@ -15,8 +14,8 @@ import 'package:String/screens/Auth/userNameScreen.dart';
 import 'package:String/screens/Auth/verifyEmail.dart';
 import 'package:String/screens/Main/Home/MatchProfile/matchProfileScreen.dart';
 import 'package:String/screens/Main/Profile/preferencesScreen.dart';
-import 'package:String/screens/Main/Settings/settingsScreen.dart';
-import 'package:String/screens/Main/Settings/stringPremium.dart';
+import 'package:String/screens/Main/Profile/Settings/settingsScreen.dart';
+import 'package:String/screens/Main/Profile/Settings/stringPremium.dart';
 import 'package:String/screens/Main/holderScreen.dart';
 import 'package:String/screens/Onboarding/OnboardingScreens.dart';
 import '../screens/Auth/forgotPasswordScreen.dart';
@@ -133,12 +132,6 @@ List<GetPage> getPage = [
     transitionDuration: const Duration(seconds: 1)
   ),  
   GetPage(
-    name: getDetailScreen, 
-    page: ()=> GetDetailsScreen(),
-    transition: Transition.cupertino,
-    transitionDuration: const Duration(seconds: 1)
-  ),  
-  GetPage(
     name: matchProfileScreen, 
     page: ()=> MatchProfileScreen(),
     transition: Transition.cupertino,
@@ -173,6 +166,13 @@ List<GetPage> getPage = [
   GetPage(
     name: editProfile, 
     page: ()=> EditProfileScreen(),
+    transition: Transition.cupertino,
+    transitionDuration: const Duration(seconds: 1)
+  ),  
+
+  GetPage(
+    name: femaleHoldersScreen, 
+    page: ()=> FemaleHolderScreen(),
     transition: Transition.cupertino,
     transitionDuration: const Duration(seconds: 1)
   ),  

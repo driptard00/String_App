@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:String/routes/app_route_names.dart';
-import 'package:String/screens/Main/LikesScreen/tabViews/likesView.dart';
-import 'package:String/screens/Main/LikesScreen/tabViews/matchesView.dart';
+import 'package:String/screens/Main/Likes/tabViews/likesView.dart';
+import 'package:String/screens/Main/Likes/tabViews/matchesView.dart';
 
 class LikesScreen extends StatelessWidget {
   const LikesScreen({super.key});

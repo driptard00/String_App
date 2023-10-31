@@ -19,13 +19,6 @@ class PreferencesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-    //   print("Hey Before Call");
-    //   _authStateController.getUserDetails();
-    //   print("Hey After Call");
-    // },);
-
-
     return GetBuilder<AuthStateController>(
       builder: (controller) {
         return Scaffold(
@@ -292,7 +285,8 @@ class PreferencesScreen extends StatelessWidget {
                           const SizedBox(height: 20,),
                           Row(
                             children: [
-                              SizedBox(
+                              Expanded(
+                                flex: 6,
                                 child: Row(
                                   children: [
                                     const Text(
@@ -303,21 +297,24 @@ class PreferencesScreen extends StatelessWidget {
                                         fontFamily: "Stinger"
                                       ),
                                     ),
-                                    Text(
-                                      (controller.user.haircolor! == "")?
-                                      ("Not specified"):
-                                      (controller.user.haircolor!),
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 18,
-                                        fontFamily: "Stinger"
+                                    Expanded(
+                                      child: Text(
+                                        (controller.user.haircolor! == "")?
+                                        ("Not specified"):
+                                        (controller.user.haircolor!),
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 18,
+                                          fontFamily: "Stinger"
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                               const SizedBox(width: 20,),
-                              SizedBox(
+                              Expanded(
+                                flex: 4,
                                 child: Row(
                                   children: [
                                     const Text(
@@ -409,20 +406,22 @@ class PreferencesScreen extends StatelessWidget {
                                     fontFamily: "Stinger"
                                   ),
                                 ),
-                                Text(
-                                  (controller.user.interests == "")?
-                                  (
-                                    "Not specified"
-                                  ):
-                                  (
-                                    controller.user.interests.toString()
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 18,
-                                    fontFamily: "Stinger"
+                                Expanded(
+                                  child: Text(
+                                    (controller.user.interests == "")?
+                                    (
+                                      "Not specified"
+                                    ):
+                                    (
+                                      controller.user.interests.toString()
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 18,
+                                      fontFamily: "Stinger"
+                                    ),
                                   ),
                                 ),
                               ],
@@ -477,7 +476,7 @@ class PreferencesScreen extends StatelessWidget {
                                           backgroundImage: (controller.selectedImage2 != null)?
                                           FileImage(controller.selectedImage2!)
                                           : 
-                                          (controller.user.images!.isNotEmpty)
+                                          (controller.user.images!.length >= 2)
                                           ? NetworkImage(controller.user.images![1])
                                           : const AssetImage("images/profileAvatar.png") as ImageProvider
                                         ),
@@ -494,7 +493,7 @@ class PreferencesScreen extends StatelessWidget {
                                           backgroundImage: (controller.selectedImage3 != null)?
                                           FileImage(controller.selectedImage3!)
                                           : 
-                                          (controller.user.images!.isNotEmpty)
+                                          (controller.user.images!.length >= 3)
                                           ? NetworkImage(controller.user.images![2])
                                           : const AssetImage("images/profileAvatar.png") as ImageProvider
                                         ),
@@ -511,7 +510,7 @@ class PreferencesScreen extends StatelessWidget {
                                           backgroundImage: (controller.selectedImage4 != null)?
                                           FileImage(controller.selectedImage4!)
                                           : 
-                                          (controller.user.images!.isNotEmpty)
+                                          (controller.user.images!.length >= 4)
                                           ? NetworkImage(controller.user.images![3])
                                           : const AssetImage("images/profileAvatar.png") as ImageProvider
                                         ),
@@ -528,7 +527,7 @@ class PreferencesScreen extends StatelessWidget {
                                           backgroundImage: (controller.selectedImage5 != null)?
                                           FileImage(controller.selectedImage5!)
                                           : 
-                                          (controller.user.images!.isNotEmpty)
+                                          (controller.user.images!.length >= 5)
                                           ? NetworkImage(controller.user.images![4])
                                           : const AssetImage("images/profileAvatar.png") as ImageProvider
                                         ),
@@ -549,9 +548,9 @@ class PreferencesScreen extends StatelessWidget {
                                         backgroundImage: (controller.selectedImage6 != null)?
                                           FileImage(controller.selectedImage6!)
                                           : 
-                                        (controller.user.images!.isNotEmpty)
-                                        ? NetworkImage(controller.user.images![5])
-                                        : const AssetImage("images/profileAvatar.png") as ImageProvider
+                                          (controller.user.images!.length >= 6)
+                                          ? NetworkImage(controller.user.images![5])
+                                          : const AssetImage("images/profileAvatar.png") as ImageProvider
                                       ),
                                     ),  
                                   ],

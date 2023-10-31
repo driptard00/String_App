@@ -3,15 +3,19 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:String/controller/authStateController.dart';
 
-import '../../../../routes/app_route_names.dart';
+import '../../../../../routes/app_route_names.dart';
 
 class LikesView extends StatelessWidget {
   LikesView({super.key});
 
-  // final AuthStateController _authStateController = Get.put(AuthStateController());
+  final AuthStateController _authStateController = Get.find<AuthStateController>();
 
   @override
   Widget build(BuildContext context) {
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _authStateController.getUserProfile();
+    });
 
     return GetBuilder<AuthStateController>(
       builder: (controller) {

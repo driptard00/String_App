@@ -8,14 +8,19 @@ import 'package:flutter/foundation.dart'
 ///
 /// Example:
 /// ```dart
- import 'firebase_options.dart';
- // ...
-
-// ```
+/// import 'firebase_options.dart';
+/// // ...
+/// await Firebase.initializeApp(
+///   options: DefaultFirebaseOptions.currentPlatform,
+/// );
+/// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -23,7 +28,10 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -41,19 +49,9 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBOgIroIKlKJMSBdwrO9yLcEgRZrNnJ3eE',
-    appId: '1:891734579345:web:0d228a48be707d22a3c730',
-    messagingSenderId: '891734579345',
-    projectId: 'string-e67f9',
-    authDomain: 'string-e67f9.firebaseapp.com',
-    storageBucket: 'string-e67f9.appspot.com',
-    measurementId: 'G-WGPCVSYP6W',
-  );
-
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCUa2v85b9OZglYODEaYgOxphm5FNdZGA4',
-    appId: '1:891734579345:android:0120cc538b0a798fa3c730',
+    appId: '1:891734579345:android:33569557c5df4ad6a3c730',
     messagingSenderId: '891734579345',
     projectId: 'string-e67f9',
     storageBucket: 'string-e67f9.appspot.com',
@@ -61,21 +59,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCwt-L7EyVsseVBO2V-5BMZCAR8NEDZYjA',
-    appId: '1:891734579345:ios:78983096dfb21435a3c730',
+    appId: '1:891734579345:ios:844fab0708c66453a3c730',
     messagingSenderId: '891734579345',
     projectId: 'string-e67f9',
     storageBucket: 'string-e67f9.appspot.com',
-    iosClientId: '891734579345-ltjdiiaagp93nfks0vj016t0mk1alv9b.apps.googleusercontent.com',
-    iosBundleId: 'com.example.stringApp',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCwt-L7EyVsseVBO2V-5BMZCAR8NEDZYjA',
-    appId: '1:891734579345:ios:78983096dfb21435a3c730',
-    messagingSenderId: '891734579345',
-    projectId: 'string-e67f9',
-    storageBucket: 'string-e67f9.appspot.com',
-    iosClientId: '891734579345-ltjdiiaagp93nfks0vj016t0mk1alv9b.apps.googleusercontent.com',
-    iosBundleId: 'com.example.stringApp',
+    androidClientId: '891734579345-cuntv9l1h2b7kul6o8bkpjo57vp3jn13.apps.googleusercontent.com',
+    iosClientId: '891734579345-k4g7m6df3hgjb6dau7ahngspi00tpmln.apps.googleusercontent.com',
+    iosBundleId: 'com.string',
   );
 }
